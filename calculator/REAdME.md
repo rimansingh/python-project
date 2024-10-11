@@ -17,7 +17,7 @@ This is a simple calculator application created using PyQt5. It provides a user-
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/calculator.git
+   git clone https://github.com/rimansingh/calculator.git
    ```
 2. Navigate to the project directory:
    ```bash
