@@ -4,4 +4,4 @@ This repository contains a collection of Python projects, each demonstrating dif
 
 ## Folder Structure
 
-- project1/: A PyQt5 application that generates random words from a predefined list. This project demonstrates the use of GUI elements and event handling in Python.
+- Project1 : A PyQt5 application that generates random words from a predefined list. This project demonstrates the use of GUI elements and event handling in Python.
