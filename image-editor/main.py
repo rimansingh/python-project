@@ -1,5 +1,4 @@
-# Module libraries
-from PyQt5.QtCore import Qt
+import sys
 from PyQt5.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -11,9 +10,9 @@ from PyQt5.QtWidgets import (
     QListWidget,
     QComboBox,
 )
-import os
 from PyQt5.QtGui import QPixmap
-from PIL import Image, ImageFilter, ImageEnhance
+from PyQt5.QtCore import Qt
+from editor import Editor  # Import Editor class from editor.py
 
 # App settings
 app = QApplication([])
@@ -48,7 +47,7 @@ filter_box.addItem("Blur")
 
 picture_box = QLabel("Image will appear here!")
 
-# App design
+# App layout
 master_layout = QHBoxLayout()
 col1 = QVBoxLayout()
 col2 = QVBoxLayout()
@@ -72,132 +71,47 @@ master_layout.addLayout(col2, 80)
 
 main_window.setLayout(master_layout)
 
-
-# App functionality
-working_directory = ""
-
-
-# File filter and extensions
-def filter(files, extension):
-    results = []
-    for file in files:
-        for ext in extension:
-            if file.endswith(ext):
-                results.append(file)
-    return results
+# Initialize Editor instance
+main = Editor(picture_box, file_list)
 
 
-# Current file directory
-def getWorkDirectory():
-    global working_directory
-    working_directory = QFileDialog.getExistingDirectory()
-    extension = [".svg", ".jpg", ".jpeg", "png"]
-    filenames = filter(os.listdir(working_directory), extension)
-    file_list.clear()
-    for filename in filenames:
-        file_list.addItem(filename)
+# File operations
+def get_working_directory():
+    directory = QFileDialog.getExistingDirectory()
+    if directory:
+        main.set_working_directory(directory)
+        main.load_file_list()
 
 
-class Editor:
-    def __init__(self) -> None:
-        self.image = None
-        self.original = None
-        self.filename = None
-        self.save_folder = "edits/"
-
-    def load_image(self, filename):
-        self.filename = filename
-        fullname = os.path.join(working_directory, self.filename)
-        self.image = Image.open(fullname)
-        self.original = self.image.copy()
-
-    def save_image(self):
-        path = os.path.join(working_directory, self.save_folder)
-        if not (os.path.exists(path) or os.path.isdir(path)):
-            os.mkdir(path)
-
-        fullname = os.path.join(path, self.filename)
-        self.image.save(fullname)
-
-    def show_image(self, path):
-        picture_box.hide()
-        image = QPixmap(path)
-        w, h = picture_box.width(), picture_box.height()
-        image = image.scaled(w, h, Qt.KeepAspectRatio)
-        picture_box.setPixmap(image)
-        picture_box.show()
-
-    def gray(self):
-        self.image = self.image.convert("L")
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def left(self):
-        self.image = self.image.transpose(Image.ROTATE_90)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def right(self):
-        self.image = self.image.transpose(Image.ROTATE_270)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def mirror(self):
-        self.image = self.image.transpose(Image.FLIP_LEFT_RIGHT)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def sharpen(self):
-        self.image = self.image.filter(ImageFilter.SHARPEN)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def blur(self):
-        self.image = self.image.filter(ImageFilter.BLUR)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def color(self):
-        self.image = ImageEnhance.Color(self.image).enhance(1.2)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
-
-    def contrast(self):
-        self.image = ImageEnhance.Contrast(self.image).enhance(1.2)
-        self.save_image()
-        image_path = os.path.join(working_directory, self.save_folder, self.filename)
-        self.show_image(image_path)
+# Handle filter changes
+def handle_filter():
+    if file_list.currentRow() >= 0:
+        selected_filter = filter_box.currentText()
+        main.apply_filter(selected_filter)
 
 
+# Display image in QLabel
 def display_image():
     if file_list.currentRow() >= 0:
         filename = file_list.currentItem().text()
         main.load_image(filename)
-        main.show_image(os.path.join(working_directory, main.filename))
+        main.show_image()
 
 
-main = Editor()
-
-btn_folder.clicked.connect(getWorkDirectory)
-
+# Event handlers
+btn_folder.clicked.connect(get_working_directory)
 file_list.currentRowChanged.connect(display_image)
+filter_box.currentTextChanged.connect(handle_filter)
 
 gray.clicked.connect(main.gray)
 btn_left.clicked.connect(main.left)
 btn_right.clicked.connect(main.right)
 sharpness.clicked.connect(main.sharpen)
-saturation.clicked.connect(main.color)
+saturation.clicked.connect(main.saturation)
 contrast.clicked.connect(main.contrast)
 blur.clicked.connect(main.blur)
 mirror.clicked.connect(main.mirror)
 
-
+# Run app
 main_window.show()
-app.exec_()
+sys.exit(app.exec_())
