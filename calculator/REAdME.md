@@ -31,3 +31,5 @@ This is a simple calculator application created using PyQt5. It provides a user-
 ## Usage
 
 Run the application
+
+![Calculator Image](calculator.png)
