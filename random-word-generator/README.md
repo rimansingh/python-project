@@ -31,3 +31,5 @@ This is a simple PyQt5 application that generates random words from a predefined
 ## Usage
 
 Run the application
+
+![Random Word Generator Image](random_word.png)
